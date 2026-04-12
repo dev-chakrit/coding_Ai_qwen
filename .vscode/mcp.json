@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "localCodingAgent": {
+      "type": "stdio",
+      "command": "bash",
+      "args": ["./scripts/run_agent_server.sh"],
+      "env": {}
+    }
+  }
+}

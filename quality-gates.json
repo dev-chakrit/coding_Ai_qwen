@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "default": [
+    "uv --directory ./apps/agent-server run pytest"
+  ],
+  "groups": [
+    {
+      "name": "agent-server-python",
+      "description": "Run the Python test suite when MCP server code or tests change.",
+      "patterns": [
+        "apps/agent-server/src/**/*.py",
+        "apps/agent-server/tests/**/*.py",
+        "apps/agent-server/pyproject.toml"
+      ],
+      "commands": [
+        "uv --directory ./apps/agent-server run pytest"
+      ]
+    },
+    {
+      "name": "shell-scripts",
+      "description": "Check shell script syntax when setup or runtime scripts change.",
+      "patterns": [
+        "scripts/*.sh"
+      ],
+      "commands": [
+        "bash -n scripts/setup_popos.sh",
+        "bash -n scripts/run_agent_server.sh",
+        "bash -n scripts/run_llamacpp_server.sh",
+        "bash -n scripts/run_quality_gates.sh",
+        "bash -n scripts/setup_vision_stack.sh",
+        "bash -n scripts/run_vision_server.sh",
+        "bash -n scripts/run_vision_smoke_test.sh",
+        "bash -n scripts/run_vscode_hook.sh"
+      ]
+    },
+    {
+      "name": "python-helper-scripts",
+      "description": "Compile root helper scripts when local tooling glue changes.",
+      "patterns": [
+        "scripts/*.py"
+      ],
+      "commands": [
+        "python3 -m py_compile scripts/quality_gate_runner.py scripts/vscode_hook.py scripts/vision_smoke_test.py"
+      ]
+    },
+    {
+      "name": "editor-and-docs",
+      "description": "Documentation and editor config changes do not add extra verification beyond defaults.",
+      "patterns": [
+        "README.md",
+        "docs/**/*.md",
+        ".github/**/*.md",
+        ".vscode/*.json",
+        ".zed/*.json",
+        ".rules",
+        "AGENTS.md",
+        "quality-gates.json",
+        ".env.example"
+      ],
+      "commands": []
+    }
+  ]
+}

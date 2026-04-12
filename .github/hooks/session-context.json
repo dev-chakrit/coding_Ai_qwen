@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "bash ./scripts/run_vscode_hook.sh",
+        "env": {
+          "LOCAL_CODING_AGENT_HOOK_PROFILE": "session-context"
+        },
+        "timeout": 30
+      }
+    ]
+  }
+}

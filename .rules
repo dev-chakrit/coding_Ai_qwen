@@ -1,0 +1,15 @@
+# Local Coding Agent Rules
+
+Use this workspace as a quality-first coding environment.
+
+- Inspect the relevant code and project structure before making edits.
+- For non-trivial changes, identify the smallest meaningful test or verification step before editing code.
+- Prefer adding or updating a regression test before the fix when the bug is reproducible.
+- After every meaningful code change, run the narrowest relevant tests first, then widen scope if needed.
+- If a test fails, do not stop at the first patch. Diagnose the root cause, fix it cleanly, rerun the failing test, and repeat until the result is green or a real blocker remains.
+- Never make a test pass by weakening assertions, deleting coverage, silencing errors, or adding broad catch-all logic unless the user explicitly asks for that tradeoff.
+- Keep fixes local, explicit, and maintainable. Avoid hacks, duplicated branches, magic delays, and ambiguous helper code.
+- During multi-step work, send short progress updates so the user can see what is happening now and what the next step is.
+- Preserve clean architecture boundaries described in `docs/clean-architecture.md`.
+- For frontend work, follow `docs/frontend-standards.md` and optimize for polished UX/UI, visual hierarchy, spacing, typography, accessibility, and responsive behavior.
+- When finishing a task, report what was verified and what still could not be verified.

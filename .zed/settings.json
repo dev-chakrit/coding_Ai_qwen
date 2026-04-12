@@ -1,0 +1,14 @@
+{
+  "context_servers": {
+    "localCodingAgent": {
+      "command": "bash",
+      "args": ["./scripts/run_agent_server.sh"],
+      "env": {}
+    }
+  },
+  "agent": {
+    "tool_permissions": {
+      "default": "confirm"
+    }
+  }
+}
