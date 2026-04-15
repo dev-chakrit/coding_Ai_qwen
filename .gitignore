@@ -13,3 +13,5 @@ build/
 vendor/
 node_modules/
 .local-coding-agent-runtime/
+models/
+*.gguf

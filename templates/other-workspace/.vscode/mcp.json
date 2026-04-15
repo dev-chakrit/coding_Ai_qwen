@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "localCodingAgent": {
+      "type": "stdio",
+      "command": "local-coding-agent",
+      "args": [],
+      "env": {}
+    }
+  }
+}

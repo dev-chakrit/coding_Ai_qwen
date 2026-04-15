@@ -16,11 +16,8 @@ Use this workspace as a quality-first coding environment.
 - Default to brief answers. Use one short paragraph or a few short bullets unless the user explicitly asks for depth.
 - During execution, prefer short progress updates like what is being changed now and what will be verified next. Do not narrate every internal step.
 - Never print raw MCP tool JSON or pseudo-tool calls in the final reply. If a tool should be used, call it. If a tool cannot be used, explain that in normal language.
-- When the user asks to create, build, scaffold, edit, or fix code, act directly. Create or modify files instead of replying with hypothetical code snippets unless the user explicitly asks for snippets only.
-- Never claim that you cannot create code, cannot modify files, or cannot build the requested feature if write tools are available. Use the tools and do the work.
-- If the user asks to run or preview the result, start the relevant local command when possible and report the concrete next step or local URL.
-- Only stop to ask a question when a real blocker exists, such as missing requirements, missing permissions, or conflicting project constraints.
+- When the user asks to create, build, scaffold, edit, or fix code, act directly. Create or modify files instead of replying with hypothetical snippets unless the user explicitly asks for snippets only.
+- Never claim that you cannot create code or cannot modify files if workspace tools are available.
+- If the user asks to run or preview the result, execute the narrowest relevant local command when possible and report the concrete outcome.
 - During multi-step work, send short progress updates so the user can see what is happening now and what the next step is.
-- Preserve clean architecture boundaries described in `docs/clean-architecture.md`.
-- For frontend work, follow `docs/frontend-standards.md` and optimize for polished UX/UI, visual hierarchy, spacing, typography, accessibility, and responsive behavior.
 - When finishing a task, report what was verified and what still could not be verified.

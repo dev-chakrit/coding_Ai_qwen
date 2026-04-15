@@ -46,6 +46,7 @@ Use a quality-first implementation workflow in this workspace:
 - After each meaningful change, run the relevant verification step.
 - If tests fail, debug the real cause, implement a maintainable fix, rerun, and repeat until green or blocked.
 - Never make failures disappear by weakening tests, muting exceptions, or adding vague fallbacks without explicit approval.
+- When using MCP tools, call the tool directly. Do not print raw tool JSON or pseudo-tool calls in the user-facing reply.
 - End by stating what was verified and what still could not be verified.
 """
 
@@ -69,6 +70,7 @@ Work like a disciplined senior engineer in this workspace:
 - Keep fixes maintainable and local to the real cause.
 - If verification fails, continue the repair loop until it passes or a real blocker is identified.
 - For UI work, include spacing, typography, hierarchy, responsive behavior, and state coverage in the acceptance bar.
+- When using MCP tools, call the tool directly. Do not print raw tool JSON or pseudo-tool calls in the user-facing reply.
 - Explain tradeoffs and remaining risks clearly when handing work back to the user.
 """
 

@@ -5,16 +5,16 @@
 - ใช้โมเดลจาก Hugging Face ผ่าน OpenAI-compatible endpoint
 - ต่อกับ `Zed` และ `VS Code` ผ่าน `MCP`
 - รู้จักโครงสร้าง workspace และช่วย scaffold งานแบบ clean architecture
-- รันบน `Pop!_OS` ได้โดยไม่ต้องพึ่ง cloud model
+- รันบน `macOS` และ `Pop!_OS` ได้โดยไม่ต้องพึ่ง cloud model
 
 ## แนวทางที่แนะนำกับเครื่องของคุณ
 
-สเปก `Xeon E5-2686 + RAM 128GB + RTX 3060 12GB` เหมาะกับแนวนี้:
+สเปก `Apple M2 + RAM 16GB` เหมาะกับแนวนี้:
 
 - editor หลัก: `Zed`
 - editor เสริมสำหรับ strict workflow: `VS Code`
 - local model runtime: `llama.cpp`
-- model เริ่มต้น: `Qwen/Qwen3-Coder-Next-GGUF`
+- model เริ่มต้น: `ggml-org/gemma-4-E4B-it-GGUF`
 - vision model เริ่มต้น: `Qwen/Qwen3-VL-2B-Instruct`
 - quantization เริ่มต้น: `Q4_K_M`
 
@@ -25,6 +25,31 @@
 - MCP server ใน repo นี้ทำหน้าที่เป็น repo-aware tool layer
 - optional vision sidecar ใช้ `vLLM` สำหรับรับรูป UI และ screenshot error
 - `VS Code` ใช้ repo เดียวกันนี้ในโหมด strict ได้ผ่าน custom agents และ hooks
+
+## โหมดที่แนะนำตอนนี้
+
+ให้คิดเป็น 2 stack:
+
+- `Gemma4 E4B Fast / Gemma4 E4B MCP Lite`
+  ใช้ใน `Zed native agent` เพื่อคุย, สรุป, อ่านไฟล์, และทำ MCP แบบเบา
+- `Stable MCP`
+  ใช้ backend ที่รองรับ `tools + parallel_tool_calls + prompt_cache_key + /chat/completions` จริง แล้วต่อกับ `localCodingAgent` ตัวเดิมเพื่อทำ tool use จริง
+
+สรุปตรง ๆ:
+
+- ถ้าต้องการ `local ล้วน` และ `เบา` ให้ใช้ `Gemma4 E4B`
+- ถ้าต้องการ `นิ่งกว่า` สำหรับ MCP/tool use จริง ให้ใช้ `OpenAI Stable MCP` เป็น backend หลักใน Zed แล้วใช้ MCP ตัวเดิม
+- ถ้าต้องการใช้หลาย workspace ให้ติดตั้ง `local-coding-agent` แบบ global หนึ่งครั้ง แล้วให้แต่ละ workspace เรียก command นี้ได้เลย
+
+ตอนนี้ใน repo มี provider เพิ่มให้แล้วชื่อ `OpenAI Stable MCP` ซึ่งชี้ไปที่ `https://api.openai.com/v1` และตั้ง capability ให้:
+
+- `tools = true`
+- `images = false`
+- `parallel_tool_calls = true`
+- `prompt_cache_key = true`
+- `chat_completions = true`
+
+โดยใช้ model เริ่มต้น `gpt-5.4-mini`
 
 ## สถานะตอนนี้แบบตรงไปตรงมา
 
@@ -46,15 +71,37 @@
 
 ## Context ตอนนี้ได้มากแค่ไหน
 
-ตัวโมเดล `Qwen3-Coder-Next` รองรับ context `262,144` tokens ตาม model card แต่ในโปรเจ็กต์นี้ค่าดีฟอลต์ของ local server ถูกตั้งไว้ที่ `32,768` ผ่าน `LLAMA_CONTEXT_SIZE=32768` เพื่อให้เหมาะกับการเริ่มต้นบน `RTX 3060 12GB`
+ตัวโมเดล `Gemma4-E4B-it-GGUF` รองรับ context ระดับยาวมากตามตระกูล Gemma 4 E4B แต่ในโปรเจ็กต์นี้ค่าดีฟอลต์ของ local server ถูกตั้งไว้ที่ `16,384` ผ่าน `LLAMA_CONTEXT_SIZE=16384` เพื่อบาลานซ์ความนิ่งกับความเร็วบนเครื่อง local
 
 สรุปแบบใช้งานจริง:
 
-- model capability สูงสุด: `262,144`
-- default ในโปรเจ็กต์นี้: `32,768`
-- ถ้าเครื่องไหวและยอมรับความช้าขึ้น สามารถเพิ่มเป็น `40960` หรือ `65536` ได้โดยปรับ `LLAMA_CONTEXT_SIZE`
+- model capability สูงสุด: สูงกว่าค่าที่เปิดใช้จริงในโปรเจ็กต์นี้
+- default ในโปรเจ็กต์นี้: `16,384`
+- ค่าที่แนะนำใน Zed สำหรับ `Gemma4 E4B MCP Lite`: `12,288`
+- ถ้าต้องการตอบไวขึ้นสามารถลดเป็น `8,192` ได้
+- ถ้าเครื่องไหวและยอมรับความช้าขึ้น สามารถเพิ่มเป็น `24,576` หรือ `32,768` ได้โดยปรับ `LLAMA_CONTEXT_SIZE`
 
 ดังนั้นคำตอบคือ “รับ context ได้เยอะพอสมควรแล้ว” แต่ดีฟอลต์ยังไม่ได้เปิดสุด เพราะบนเครื่องคุณควรบาลานซ์ระหว่างความนิ่งกับความยาว context ก่อน
+
+## จูน `Gemma4 E4B` ให้ดีที่สุดใน Zed
+
+ถ้าจะใช้ `Gemma4 E4B` ต่อ ให้ตั้งแบบนี้:
+
+- `LLAMA_CONTEXT_SIZE=16384`
+- `LLAMA_REASONING=on`
+- `LLAMA_TEMPERATURE=0.1`
+- `LLAMA_TOP_P=0.9`
+- `Gemma4 E4B Fast`
+  ใช้คุย, สรุป, วางแผน, และงานที่ไม่ต้องเรียก tools
+- `Gemma4 E4B MCP Lite`
+  ใช้กับ MCP/tool use แบบเบาเท่านั้น
+
+ข้อปฏิบัติที่ช่วยได้จริง:
+
+- ใช้ `Ask` profile ก่อน `Write`
+- อย่าสั่งหลายอย่างใน prompt เดียว
+- ให้มันอ่านไฟล์หรือใช้ tool ทีละ step
+- ถ้ามันเริ่มพ่น JSON tool call ดิบ ให้หยุด thread นั้นแล้วสลับไป stable stack ทันที
 
 ## คำสั่งติดตั้งแบบครบ
 
@@ -90,6 +137,12 @@ uv tool install hf
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
+บน macOS ที่ติดตั้ง `uv` ผ่าน Homebrew คำสั่งมักอยู่ที่:
+
+```bash
+/opt/homebrew/bin/uv tool install hf
+```
+
 ### 4. ติดตั้ง Zed บน Linux
 
 ```bash
@@ -102,6 +155,45 @@ curl -f https://zed.dev/install.sh | sh
 uv --directory ./apps/agent-server sync --extra dev
 ```
 
+ถ้าต้องการใช้ MCP server นี้กับ workspace อื่นด้วย ให้ติดตั้ง command แบบ global หนึ่งครั้ง:
+
+```bash
+bash ./scripts/install_global_agent.sh
+```
+
+จากนั้น editor ตัวอื่นหรือ workspace อื่นจะเรียก command ชื่อ `local-coding-agent` ได้เลย
+
+ถ้าจะใช้ `OpenAI Stable MCP` ด้วย ให้ตั้ง API key หนึ่งครั้ง:
+
+```bash
+export OPENAI_STABLE_MCP_API_KEY="YOUR_OPENAI_API_KEY"
+```
+
+บน macOS ถ้าต้องการให้ใช้ได้ทุก terminal/session:
+
+```bash
+echo 'export OPENAI_STABLE_MCP_API_KEY="YOUR_OPENAI_API_KEY"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+ถ้าคุณอยากเริ่มงานใหม่บน `Desktop` แบบนิ่งกว่าการเปิด Zed เปล่า ๆ ให้ใช้คำสั่งเดียวนี้:
+
+```bash
+bash ./scripts/new_desktop_workspace.sh my-new-app
+```
+
+คำสั่งนี้จะ:
+
+- สร้างโฟลเดอร์ `~/Desktop/my-new-app`
+- bootstrap `.rules`, `AGENTS.md`, `.zed/settings.json`, `.vscode/mcp.json`
+- พยายามเปิดโฟลเดอร์นั้นใน Zed ให้ทันที
+
+ถ้าโฟลเดอร์มีอยู่แล้วและต้องการเขียนทับ config/template ให้ใช้:
+
+```bash
+bash ./scripts/new_desktop_workspace.sh --force my-new-app
+```
+
 ### 6. ติดตั้ง VS Code เพิ่ม ถ้าต้องการโหมด strict workflow
 
 ```bash
@@ -112,9 +204,9 @@ sudo apt install -y code
 
 ```bash
 mkdir -p ./models
-hf download Qwen/Qwen3-Coder-Next-GGUF \
-  --include "Qwen3-Coder-Next-Q4_K_M/*" \
-  --local-dir ./models/Qwen3-Coder-Next-Q4_K_M
+uvx --from huggingface_hub hf download ggml-org/gemma-4-E4B-it-GGUF \
+  --include "gemma-4-E4B-it-Q4_K_M.gguf" \
+  --local-dir ./models/Gemma4-E4B-it-GGUF
 ```
 
 ### 8. เตรียม `llama.cpp`
@@ -188,15 +280,18 @@ uv --directory ./apps/agent-server sync --extra dev
 
 ```bash
 mkdir -p ./models
-hf download Qwen/Qwen3-Coder-Next-GGUF \
-  --include "Qwen3-Coder-Next-Q4_K_M/*" \
-  --local-dir ./models/Qwen3-Coder-Next-Q4_K_M
+uvx --from huggingface_hub hf download ggml-org/gemma-4-E4B-it-GGUF \
+  --include "gemma-4-E4B-it-Q4_K_M.gguf" \
+  --local-dir ./models/Gemma4-E4B-it-GGUF
 ```
 
 4. รัน local model server
 
 ```bash
-MODEL_FILE=./models/Qwen3-Coder-Next-Q4_K_M/Qwen3-Coder-Next-Q4_K_M-00001-of-00004.gguf \
+LLAMA_CONTEXT_SIZE=16384 \
+LLAMA_REASONING=on \
+LLAMA_TEMPERATURE=0.1 \
+MODEL_FILE=./models/Gemma4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf \
 bash ./scripts/run_llamacpp_server.sh
 ```
 
@@ -205,6 +300,8 @@ bash ./scripts/run_llamacpp_server.sh
 ```bash
 bash ./scripts/run_agent_server.sh
 ```
+
+6. ถ้าจะใช้ backend ที่นิ่งกว่าสำหรับ MCP/tool use จริง ไม่ต้องรัน local model ก็ได้ แค่ตั้ง `OPENAI_STABLE_MCP_API_KEY` แล้วเลือก `GPT-5.4 mini Stable MCP` ใน Zed
 
 6. ถ้าต้องการรับรูปภาพด้วย ให้รัน vision sidecar
 
@@ -222,6 +319,22 @@ bash ./scripts/run_vision_smoke_test.sh --image /path/to/reference-or-error.png
 
 - Zed: ใช้ค่าจาก `.zed/settings.json` และเพิ่ม local model provider ตาม [docs/editor-setup.md](./docs/editor-setup.md)
 - VS Code: ใช้ `.vscode/mcp.json` และ `.vscode/settings.json`
+
+ถ้าจะใช้กับ workspace อื่น:
+
+```bash
+bash ./scripts/bootstrap_workspace.sh /absolute/path/to/other-workspace
+```
+
+คำสั่งนี้จะใส่ไฟล์ตั้งต้นให้ workspace ใหม่เพื่อให้ใช้ `local-coding-agent` ได้เหมือนกัน
+
+ถ้า Zed แสดง `localCodingAgent` แต่เปิด server ไม่ขึ้น ให้ดู path ของ `uv` ก่อน:
+
+```bash
+command -v uv
+```
+
+แล้วเพิ่ม `UV_BIN` ใน MCP config ถ้าจำเป็น เช่น `/home/<user>/.local/bin/uv`
 
 ## MCP Server มีเครื่องมืออะไรบ้าง
 
@@ -261,6 +374,7 @@ prompts/resources เพิ่มสำหรับ vision workflow:
 - ห้ามแก้แบบลวก ๆ เช่นลด assertion, mute error, หรือซ่อนปัญหา
 - งาน frontend ต้องนับ UX/UI เป็นส่วนหนึ่งของ definition of done
 - ระหว่างงานหลายขั้น agent ควรรายงานความคืบหน้าสั้น ๆ ให้เห็นว่ากำลังทำอะไรอยู่
+- ถ้าจะใช้ tool ต้องเรียกจริง ไม่พ่น JSON tool call ดิบออกมาในคำตอบ
 
 นอกจากนี้ยังมี `quality-gates.json` เป็น source of truth สำหรับ verification commands ทั้ง Zed, VS Code, และ shell
 
@@ -301,3 +415,4 @@ workflow ที่แนะนำ:
 - เป้าหมายของ repo นี้คือทำ “local stack ที่ใช้ได้จริง” และเพิ่ม quality rails ให้พลาดยากขึ้น
 - ถ้าต้องการ workflow เบาและตรง ให้เริ่มจาก `Zed`
 - ถ้าต้องการ workflow เข้มพร้อม custom agents และ stop hooks ให้ใช้ `VS Code` กับไฟล์ที่เพิ่มไว้ใน repo นี้
+- ถ้าต้องการ MCP/tool use ที่นิ่งกว่าการใช้ local `4B` ให้เก็บ MCP server ตัวเดิมไว้ แล้วเปลี่ยนไปใช้ agent/model ที่แรงกว่าเป็นตัวเรียก MCP แทน

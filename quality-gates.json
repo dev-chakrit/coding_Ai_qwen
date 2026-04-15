@@ -25,6 +25,9 @@
       "commands": [
         "bash -n scripts/setup_popos.sh",
         "bash -n scripts/run_agent_server.sh",
+        "bash -n scripts/install_global_agent.sh",
+        "bash -n scripts/bootstrap_workspace.sh",
+        "bash -n scripts/new_desktop_workspace.sh",
         "bash -n scripts/run_llamacpp_server.sh",
         "bash -n scripts/run_quality_gates.sh",
         "bash -n scripts/setup_vision_stack.sh",
@@ -52,6 +55,7 @@
         ".github/**/*.md",
         ".vscode/*.json",
         ".zed/*.json",
+        "templates/**/*",
         ".rules",
         "AGENTS.md",
         "quality-gates.json",

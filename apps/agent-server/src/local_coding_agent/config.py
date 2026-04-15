@@ -39,6 +39,20 @@ DEFAULT_EXCLUDED_DIRS = {
     ".pytest_cache",
 }
 
+ROOT_DISCOVERY_MARKERS = (
+    ".git",
+    ".hg",
+    ".svn",
+    "quality-gates.json",
+    "pyproject.toml",
+    "package.json",
+    "go.mod",
+    "Cargo.toml",
+    "composer.json",
+    ".zed",
+    ".vscode",
+)
+
 
 @dataclass(slots=True)
 class Settings:
@@ -50,9 +64,18 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
-        workspace_root = Path(
-            os.getenv("LOCAL_CODING_AGENT_WORKSPACE_ROOT", os.getcwd())
-        ).resolve()
+        explicit_workspace_root = os.getenv("LOCAL_CODING_AGENT_WORKSPACE_ROOT")
+        if explicit_workspace_root:
+            workspace_root = Path(explicit_workspace_root).resolve()
+        else:
+            cwd = Path(os.getcwd()).resolve()
+            discover_root = os.getenv("LOCAL_CODING_AGENT_DISCOVER_ROOT", "1").lower() not in {
+                "0",
+                "false",
+                "no",
+                "off",
+            }
+            workspace_root = cls._discover_workspace_root(cwd) if discover_root else cwd
         max_read_bytes = int(os.getenv("LOCAL_CODING_AGENT_MAX_READ_BYTES", "262144"))
         timeout = int(os.getenv("LOCAL_CODING_AGENT_MAX_COMMAND_TIMEOUT", "180"))
         allowed = cls._parse_allowed_commands(
@@ -77,3 +100,11 @@ class Settings:
             if parts:
                 items.append(parts)
         return tuple(items)
+
+    @staticmethod
+    def _discover_workspace_root(start_path: Path) -> Path:
+        current = start_path if start_path.is_dir() else start_path.parent
+        for candidate in (current, *current.parents):
+            if any((candidate / marker).exists() for marker in ROOT_DISCOVERY_MARKERS):
+                return candidate
+        return current

@@ -1,6 +1,6 @@
 # Workspace Agent Guide
 
-This repository expects quality-first agent behavior.
+This workspace expects quality-first agent behavior.
 
 ## Delivery workflow
 
@@ -18,17 +18,16 @@ This repository expects quality-first agent behavior.
 - For multi-step work, keep the user informed with short progress updates that describe the current action and the next step.
 - Never print raw MCP tool JSON or pseudo-tool calls in the final reply. If a tool should be used, call it. If a tool cannot be used, explain that in normal language.
 - When the user asks to create, scaffold, edit, or fix code, do the work directly. Prefer changing files over giving abstract snippets unless snippets are explicitly requested.
-- Do not say that you cannot create code or cannot modify the project if workspace tools are available. Use the tools first.
+- Do not say that you cannot create code or cannot modify the project if workspace tools are available.
 - If the user asks to run the result, run the narrowest relevant local command when possible and report what was executed and how to access the result.
 
 ## Architecture
 
-- Keep dependencies flowing inward as documented in `docs/clean-architecture.md`.
+- Keep dependencies flowing inward.
 - Add new features as vertical slices when possible.
 - Keep naming explicit so future agents can navigate the codebase quickly.
 
 ## Frontend quality bar
 
 - Treat layout, spacing, typography, interaction states, and responsiveness as part of correctness.
-- Use `docs/frontend-standards.md` when creating or editing UI.
 - Favor coherent visual systems over ad hoc styling.
