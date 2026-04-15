@@ -536,15 +536,15 @@ sequenceDiagram
     participant Vision as vLLM Sidecar Qwen3-VL
     participant FS as File System
 
-    rect rgb(30, 41, 59)
-    Note over Dev,FS: Phase 1 Task Understanding
+    rect rgb(224, 231, 255)
+    Note over Dev,FS: Phase 1 — Task Understanding
     Dev->>Editor: send prompt
     Editor->>LLM: send prompt + context
     LLM-->>Editor: analyze + plan tool calls
     end
 
-    rect rgb(30, 41, 59)
-    Note over Dev,FS: Phase 2 Code Inspection
+    rect rgb(219, 234, 254)
+    Note over Dev,FS: Phase 2 — Code Inspection
     Editor->>MCP: workspace_summary()
     MCP->>FS: read workspace tree
     FS-->>MCP: return tree structure
@@ -561,8 +561,8 @@ sequenceDiagram
     MCP-->>Editor: return content + line numbers
     end
 
-    rect rgb(30, 41, 59)
-    Note over Dev,FS: Phase 3 Implementation
+    rect rgb(220, 252, 231)
+    Note over Dev,FS: Phase 3 — Implementation
     Editor->>LLM: generate code from context
     LLM-->>Editor: return code changes
 
@@ -584,8 +584,8 @@ sequenceDiagram
     MCP-->>Editor: return success
     end
 
-    rect rgb(30, 41, 59)
-    Note over Dev,FS: Phase 4 Quality Gate Verification
+    rect rgb(254, 249, 195)
+    Note over Dev,FS: Phase 4 — Quality Gate Verification
     Editor->>MCP: suggest_quality_gate_commands(changed_paths)
     MCP->>FS: read quality-gates.json
     FS-->>MCP: return config
@@ -608,8 +608,8 @@ sequenceDiagram
     end
     end
 
-    rect rgb(30, 41, 59)
-    Note over Dev,FS: Phase 5 Vision Workflow Optional
+    rect rgb(237, 233, 254)
+    Note over Dev,FS: Phase 5 — Vision Workflow (Optional)
     Dev->>Editor: attach screenshot / UI reference
     Editor->>Vision: analyze image
     Vision-->>Editor: return visual brief
@@ -617,8 +617,8 @@ sequenceDiagram
     LLM-->>Editor: return implementation
     end
 
-    rect rgb(30, 41, 59)
-    Note over Dev,FS: Phase 6 Report
+    rect rgb(226, 232, 240)
+    Note over Dev,FS: Phase 6 — Report
     Editor-->>Dev: summary + verification results
     end
 ```
