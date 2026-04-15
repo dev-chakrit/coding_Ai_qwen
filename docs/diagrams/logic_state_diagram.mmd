@@ -1,0 +1,97 @@
+stateDiagram-v2
+    [*] --> ReceiveTask: รับ Task จาก Developer
+
+    state ReceiveTask {
+        [*] --> ParsePrompt: อ่าน prompt
+        ParsePrompt --> ClassifyTask: จัดประเภทงาน
+    }
+
+    ReceiveTask --> TaskDecision
+
+    state TaskDecision <<choice>>
+    TaskDecision --> VisionAnalysis: มีรูปภาพ / UI reference
+    TaskDecision --> CodeInspection: ไม่มีรูปภาพ
+
+    state VisionAnalysis {
+        [*] --> SendToVision: ส่งภาพไป vLLM Sidecar
+        SendToVision --> ExtractInfo: สกัดข้อมูลจากภาพ
+        state ExtractInfo {
+            UIRef: UI Reference → layout, spacing, typography, hierarchy
+            ErrorShot: Screenshot Error → error text, paths, root cause
+        }
+        ExtractInfo --> GenerateBrief: สร้าง Build/Debug Brief
+    }
+
+    VisionAnalysis --> CodeInspection
+
+    state CodeInspection {
+        [*] --> WorkspaceSummary: workspace_summary()
+        WorkspaceSummary --> SearchCode: search_code(query)
+        SearchCode --> ReadFiles: read_text_file(path)
+        ReadFiles --> UnderstandContext: เข้าใจ context ของโค้ด
+    }
+
+    CodeInspection --> PlanDecision
+
+    state PlanDecision <<choice>>
+    PlanDecision --> ScaffoldFeature: ต้อง scaffold feature ใหม่
+    PlanDecision --> Implementation: แก้โค้ดที่มีอยู่
+
+    state ScaffoldFeature {
+        [*] --> CreateSlice: create_clean_architecture_feature()
+        CreateSlice --> CreateDomain: สร้าง domain/
+        CreateDomain --> CreateApp: สร้าง application/
+        CreateApp --> CreateInfra: สร้าง infrastructure/
+        CreateInfra --> CreatePres: สร้าง presentation/
+    }
+
+    ScaffoldFeature --> Implementation
+
+    state Implementation {
+        [*] --> GenerateCode: LLM สร้างโค้ด
+        GenerateCode --> WriteFile: write_text_file()
+        GenerateCode --> EditFile: replace_in_file()
+        WriteFile --> ChangesApplied
+        EditFile --> ChangesApplied
+    }
+
+    Implementation --> QualityGates
+
+    state QualityGates {
+        [*] --> SuggestCommands: suggest_quality_gate_commands()
+        SuggestCommands --> RunGates: run_quality_gates()
+        RunGates --> GateResult
+
+        state GateResult <<choice>>
+        GateResult --> RepairLoop: ❌ FAIL
+        GateResult --> AllPassed: ✅ PASS
+
+        state RepairLoop {
+            [*] --> DiagnoseFailure: อ่าน failure output
+            DiagnoseFailure --> FindRootCause: หา root cause
+            FindRootCause --> ApplyFix: แก้ตรงจุด
+            ApplyFix --> RerunCheck: rerun verification
+        }
+        RepairLoop --> RunGates: กลับไป verify ใหม่
+    }
+
+    state AllPassed {
+        [*] --> CheckDOD: ตรวจ Definition of Done
+        state CheckDOD {
+            CodeCorrect: โค้ดถูกต้อง ✅
+            TestPass: Test ผ่าน ✅
+            NoRegression: ไม่มี regression ✅
+            UIQuality: UI quality bar ผ่าน ✅
+        }
+    }
+
+    AllPassed --> Report
+
+    state Report {
+        [*] --> SummarizeWork: สรุปสิ่งที่ทำ
+        SummarizeWork --> ListVerified: ระบุสิ่งที่ verify แล้ว
+        ListVerified --> ListUnverified: ระบุสิ่งที่ยัง verify ไม่ได้
+        ListUnverified --> NotifyDev: แจ้ง Developer
+    }
+
+    Report --> [*]

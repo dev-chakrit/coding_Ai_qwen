@@ -1,0 +1,110 @@
+graph TB
+    subgraph EDITOR["🖥️ Editor Layer"]
+        direction LR
+        ZED["<b>Zed Editor</b><br/>Native Agent + MCP Client"]
+        VSCODE["<b>VS Code</b><br/>Custom Agents + Hooks"]
+    end
+
+    subgraph MCP_PROTO["🔌 MCP Protocol Layer"]
+        STDIO["MCP over stdio"]
+    end
+
+    subgraph MCP_SERVER["⚙️ MCP Server — FastMCP"]
+        direction TB
+        subgraph RESOURCES["📚 Resources"]
+            R1["architecture://clean-architecture-guide"]
+            R2["workflow://delivery-quality"]
+            R3["design://frontend-quality-guide"]
+            R4["workflow://senior-delivery-guide"]
+            R5["workflow://quality-gates"]
+            R6["workflow://vision-workflow-guide"]
+        end
+
+        subgraph PROMPTS["💬 Prompts"]
+            P1["clean_architecture_prompt"]
+            P2["repair_loop_prompt"]
+            P3["frontend_polish_prompt"]
+            P4["senior_delivery_prompt"]
+            P5["quality_gate_prompt"]
+            P6["ui_reference_prompt"]
+            P7["screenshot_debug_prompt"]
+        end
+
+        subgraph TOOLS["🔧 Tools"]
+            T1["workspace_summary"]
+            T2["find_files"]
+            T3["search_code"]
+            T4["read_text_file"]
+            T5["write_text_file"]
+            T6["replace_in_file"]
+            T7["create_clean_architecture_feature"]
+            T8["run_project_command"]
+            T9["get_quality_gates"]
+            T10["suggest_quality_gate_commands"]
+            T11["run_quality_gates"]
+        end
+
+        subgraph CONFIG["📋 Config"]
+            CFG1["Settings.from_env()"]
+            CFG2["quality-gates.json"]
+        end
+    end
+
+    subgraph CLEAN_ARCH["🏗️ Clean Architecture Layers"]
+        direction LR
+        DOMAIN["<b>Domain</b><br/>Entity, Value Object,<br/>Repository Contract"]
+        APP["<b>Application</b><br/>Use Case,<br/>Orchestration"]
+        INFRA["<b>Infrastructure</b><br/>File System, LLM Adapter,<br/>External API"]
+        PRES["<b>Presentation</b><br/>CLI, HTTP DTO,<br/>Editor Payload"]
+    end
+
+    subgraph MODELS["🤖 Model / Runtime Layer"]
+        direction LR
+        LLAMA["<b>llama.cpp Server</b><br/>Gemma4 E4B · Q4_K_M<br/>OpenAI-compatible API"]
+        VISION["<b>vLLM Vision Sidecar</b><br/>Qwen3-VL-2B-Instruct<br/>Image Analysis"]
+        OPENAI["<b>OpenAI Stable MCP</b><br/>GPT-5.4 mini<br/>Cloud Fallback"]
+    end
+
+    subgraph WORKSPACE["💾 Workspace / File System"]
+        FS["Project Files"]
+        QG["quality-gates.json"]
+        SCRIPTS["scripts/"]
+    end
+
+    ZED -->|"MCP calls"| STDIO
+    VSCODE -->|"MCP calls"| STDIO
+    STDIO --> MCP_SERVER
+
+    ZED -.->|"LLM inference"| LLAMA
+    ZED -.->|"LLM inference"| OPENAI
+    ZED -.->|"Vision analysis"| VISION
+
+    TOOLS --> WORKSPACE
+    CONFIG --> QG
+    MCP_SERVER --> CLEAN_ARCH
+
+    PRES --> APP
+    INFRA --> APP
+    APP --> DOMAIN
+
+    classDef editorBox fill:#0ea5e9,stroke:#0284c7,color:#fff,stroke-width:2px
+    classDef mcpBox fill:#8b5cf6,stroke:#7c3aed,color:#fff,stroke-width:2px
+    classDef serverBox fill:#6366f1,stroke:#4f46e5,color:#fff,stroke-width:2px
+    classDef toolBox fill:#14b8a6,stroke:#0d9488,color:#fff,stroke-width:1px
+    classDef modelBox fill:#22c55e,stroke:#16a34a,color:#fff,stroke-width:2px
+    classDef visionBox fill:#f97316,stroke:#ea580c,color:#fff,stroke-width:2px
+    classDef openaiBox fill:#ec4899,stroke:#db2777,color:#fff,stroke-width:2px
+    classDef fsBox fill:#64748b,stroke:#475569,color:#fff,stroke-width:2px
+    classDef archBox fill:#a78bfa,stroke:#8b5cf6,color:#fff,stroke-width:1px
+
+    class ZED,VSCODE editorBox
+    class STDIO mcpBox
+    class T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11 toolBox
+    class LLAMA modelBox
+    class VISION visionBox
+    class OPENAI openaiBox
+    class FS,QG,SCRIPTS fsBox
+    class DOMAIN,APP,INFRA,PRES archBox
+    class R1,R2,R3,R4,R5,R6 serverBox
+    class P1,P2,P3,P4,P5,P6,P7 serverBox
+    class CFG1,CFG2 fsBox

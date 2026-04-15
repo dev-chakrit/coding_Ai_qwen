@@ -1,0 +1,94 @@
+sequenceDiagram
+    autonumber
+    actor Dev as 👨‍💻 Developer
+    participant Editor as 🖥️ Editor<br/>(Zed / VS Code)
+    participant MCP as ⚙️ MCP Server<br/>(FastMCP)
+    participant LLM as 🤖 llama.cpp<br/>(Gemma4 E4B)
+    participant Vision as 👁️ vLLM Sidecar<br/>(Qwen3-VL-2B)
+    participant FS as 💾 File System<br/>(Workspace)
+
+    rect rgb(30, 41, 59)
+    Note over Dev,FS: 📋 Phase 1 — Task Understanding
+    Dev->>Editor: ส่ง prompt / สั่งงาน
+    Editor->>LLM: ส่ง prompt + context
+    LLM-->>Editor: วิเคราะห์งาน + วางแผน tool calls
+    end
+
+    rect rgb(30, 41, 59)
+    Note over Dev,FS: 🔍 Phase 2 — Code Inspection
+    Editor->>MCP: workspace_summary()
+    MCP->>FS: อ่าน workspace tree
+    FS-->>MCP: return tree structure
+    MCP-->>Editor: return project structure
+
+    Editor->>MCP: search_code(query)
+    MCP->>FS: ค้นหาในไฟล์
+    FS-->>MCP: return search results
+    MCP-->>Editor: return matching code
+
+    Editor->>MCP: read_text_file(path)
+    MCP->>FS: อ่านไฟล์
+    FS-->>MCP: return file content
+    MCP-->>Editor: return content + line numbers
+    end
+
+    rect rgb(30, 41, 59)
+    Note over Dev,FS: ✏️ Phase 3 — Implementation
+    Editor->>LLM: สร้างโค้ดจาก context ที่ได้
+    LLM-->>Editor: return code changes
+
+    alt สร้าง feature ใหม่
+        Editor->>MCP: create_clean_architecture_feature(name)
+        MCP->>FS: scaffold domain/app/infra/pres
+        FS-->>MCP: confirm scaffold
+        MCP-->>Editor: return created paths
+    end
+
+    Editor->>MCP: write_text_file(path, content)
+    MCP->>FS: เขียนไฟล์ใหม่
+    FS-->>MCP: confirm write
+    MCP-->>Editor: return success
+
+    Editor->>MCP: replace_in_file(path, search, replace)
+    MCP->>FS: แก้โค้ดตรงจุด
+    FS-->>MCP: confirm edit
+    MCP-->>Editor: return success
+    end
+
+    rect rgb(30, 41, 59)
+    Note over Dev,FS: ✅ Phase 4 — Quality Gate Verification
+    Editor->>MCP: suggest_quality_gate_commands(changed_paths)
+    MCP->>FS: อ่าน quality-gates.json
+    FS-->>MCP: return config
+    MCP-->>Editor: return suggested commands
+
+    loop Repair Loop จนกว่าจะผ่าน
+        Editor->>MCP: run_quality_gates(changed_paths)
+        MCP->>FS: รัน verification commands
+        FS-->>MCP: return results (pass/fail)
+        MCP-->>Editor: return gate results
+
+        alt ❌ Gate Failed
+            Editor->>LLM: วิเคราะห์ failure + หา root cause
+            LLM-->>Editor: return fix
+            Editor->>MCP: replace_in_file(fix)
+            MCP->>FS: apply fix
+            FS-->>MCP: confirm
+            MCP-->>Editor: return success
+        end
+    end
+    end
+
+    rect rgb(30, 41, 59)
+    Note over Dev,FS: 👁️ Phase 5 — Vision Workflow (Optional)
+    Dev->>Editor: แนบ screenshot / UI reference
+    Editor->>Vision: วิเคราะห์ภาพ
+    Vision-->>Editor: return visual brief (layout, spacing, errors)
+    Editor->>LLM: implement ตาม brief
+    LLM-->>Editor: return implementation
+    end
+
+    rect rgb(30, 41, 59)
+    Note over Dev,FS: 📊 Phase 6 — Report
+    Editor-->>Dev: สรุปผลงาน + สิ่งที่ verify แล้ว/ยังไม่ได้
+    end
