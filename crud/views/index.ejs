@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายการสินค้า</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        h1 { border-bottom: 2px solid #ccc; padding-bottom: 10px; }
+        .item-list { list-style: none; padding: 0; }
+        .item-card { border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .item-details strong { display: block; font-size: 1.1em; margin-bottom: 5px; }
+        .actions a, .actions button { margin-left: 10px; padding: 8px 15px; text-decoration: none; border: none; border-radius: 4px; cursor: pointer; }
+        .actions a.btn-edit { background-color: #007bff; color: white; }
+        .actions a.btn-delete { background-color: #dc3545; color: white; }
+        .actions a.btn-view { background-color: #28a745; color: white; }
+        .add-button { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; }
+        .error { color: red; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>รายการสินค้า (CRUD)</h1>
+        <a href="/add" class="add-button">เพิ่มสินค้าใหม่</a>
+
+        <div id="message">
+            <% if (typeof message !== 'undefined') { %>
+                <p style="color: green;"><%= message %></p>
+            <% } %>
+        </div>
+
+        <% if (items.length > 0) { %>
+            <ul class="item-list">
+                <% items.forEach(item => { %>
+                    <li class="item-card">
+                        <div class="item-details">
+                            <strong><%= item.name %></strong>
+                            <p><%= item.description %></p>
+                            <small>ID: <%= item.id %> | สร้างเมื่อ: <%= item.createdAt.toLocaleDateString() %></small>
+                        </div>
+                        <div class="actions">
+                            <a href="/edit/<%= item.id %>" class="btn-edit">แก้ไข</a>
+                            <form action="/delete/<%= item.id %>" method="POST" style="display: inline-block;">
+                                <button type="submit" class="btn-delete" onclick="return confirm('คุณแน่ใจหรือไม่ที่จะลบสินค้าชิ้นนี้?');">ลบ</button>
+                            </form>
+                        </div>
+                    </li>
+                <% }) %>
+            </ul>
+        <% } else { %>
+            <p>ไม่พบสินค้าในระบบ</p>
+        <% } %>
+    </div>
+</body>
+</html>
